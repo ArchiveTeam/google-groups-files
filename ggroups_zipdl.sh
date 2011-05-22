@@ -160,45 +160,54 @@ getgrp()
 while true;
 do
 	stime=2
+	donef=0
 	while true;
 	do
 		getdir
 		ret=$?
-		if test $ret -eq 0;
-		then
-			break;
-		fi
-		if test $ret -eq 2;
-		then
-			echo Error, waiting $stime seconds...
-			sleep $stime
-		fi
 		if test $ret -eq 1;
 		then
 			stime=2
+		else
+			if test $ret -eq 0;
+			then
+				donef=1
+			else
+				break
+			fi
 		fi	
 	done
 
-	stime=2
 	while true;
 	do
 		getgrp
 		ret=$?
 		if test $ret -eq 0;
 		then
-			break;
+			if test $donef -eq 1;
+			then
+				echo Done, waiting 30 minutes...
+				sleep 1800
+			fi
+			break
 		fi
 		if test $ret -eq 2;
 		then
 			echo Error, waiting $stime seconds...
 			sleep $stime
+			if $stime -le 856;
+			then
+				if $time -ge 256;
+				then
+					stime=$(($stime+300))
+				else
+					stime=$(($stime**2))
+				fi
+			fi
 		fi
 		if test $ret -eq 1;
 		then
 			stime=2
 		fi	
 	done
-	
-	echo Done, waiting 30 minutes...
-	sleep 1800
 done
