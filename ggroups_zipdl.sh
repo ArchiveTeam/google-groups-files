@@ -10,12 +10,15 @@ getdir()
 	GRPC=$TMP-grpc.$$
 	LAST_GRPS=$TMP-lgrps.$$
 	DIRS=$TMP-dirs.$$
+	WGET_OUT=$TMP-wgetout.$$
 	NULL=/dev/null
 	
 	ret=0
 	
-	wget -t 3 -O $DIRS $BASE/getdir?n=1
-	if test $? -ne 0;
+	wget -t 3 -O $DIRS $BASE/getdir?n=1 2> $WGET_OUT
+	wgetret=$?
+	cat $WGET_OUT
+	if test $wgetret -ne 0;
 	then
 		echo Error retrieving a directory URL
 		return 2
@@ -106,8 +109,9 @@ getgrp()
 {
 	BASE=http://archiveteamorg.appspot.com
 	TMP=/tmp/ggroups
-	GRP=$TMP-ggroups-grpname.$$
+	GRP=$TMP-grpname.$$
 	NULL=/dev/null
+	WGET_OUT=$TMP-wgetout.$$
 
 	wget -t 3 -O $GRP $BASE/getgrp
 	if test $? -ne 0;
@@ -135,21 +139,32 @@ getgrp()
 		
 		echo Downloading $grp
 		
-		wget -t 3 -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages
-		if test $? -ne 0;
+		doneg=0
+		wget -t 3 -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages 2> $WGET_OUT
+		wgetrc=$?
+		cat $WGET_OUT
+		if test $wgetrc -ne 0;
 		then
 			echo Error downloading $grp-pages.zip
-			return 2
+			grep -q "500 Internal Server Error" $WGET_OUT
+			if test $? -eq 0;
+			then
+				wget -t 3 -O $NULL $BASE/errorgrp?g=$grp
+			fi
+		else
+			doneg=1
 		fi				
 			
 		wget -t 3 -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
 		if test $? -ne 0;
 		then
-			echo Error downloading $grp-files.zip
-			return 2
+			doneg=0
 		fi
 		
-		wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+		if test $doneg -eq 1;
+		then
+			wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+		fi
 
 		ret=1
 	done < $GRP
