@@ -1,5 +1,15 @@
 #!/bin/sh
 
+lastop=0
+delay()
+{
+	thisop=$(date +%s)
+	if test $(($thisop - $lastop)) -lt 1;
+	then
+		sleep 1
+	fi
+}
+
 checkabort()
 {
 	if test -e /tmp/ggroups-STOP;
@@ -47,6 +57,7 @@ getdir()
 		checkabort
 	
 		URL=http://groups.google.com/groups/dir?$gdir
+		delay
 		wget -t 3 -O $DIR $URL
 		if test $? -ne 0;
 		then
@@ -155,6 +166,7 @@ getgrp()
 		echo Downloading $grp
 		
 		doneg=1
+		delay
 		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages 2> $WGET_OUT
 		wgetrc=$?
 		cat $WGET_OUT
@@ -180,7 +192,15 @@ getgrp()
 				return 2
 			fi
 		fi				
-			
+		if test -s $sub/$grp-pages.zip;
+		then
+			echo $grp downloaded
+		else
+			echo remove $sub/$grp-pages.zip
+			rm $sub/$grp-pages.zip
+		fi
+		
+		delay
 		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
 		if test $? -ne 0;
 		then
@@ -192,6 +212,13 @@ getgrp()
 			wget -t 3 -O $NULL $BASE/donegrp?g=$grp
 		fi
 
+		if test -s $sub/$grp-files.zip;
+		then
+			echo $grp downloaded
+		else
+			rm $sub/$grp-files.zip
+		fi
+		
 		ret=1
 	done < $GRP
 	
