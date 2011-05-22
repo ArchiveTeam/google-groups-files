@@ -198,6 +198,20 @@ getgrp()
 	return $ret
 }
 
+mkdir tdir$$
+if test $? -ne 0;
+then
+	echo Cannot create directories
+	exit
+fi
+touch tdir$$/test
+if test $? -ne 0;
+then
+	echo Cannot create test file
+	exit
+fi
+rm -rf tdir$$
+
 stime=2
 while true;
 do
