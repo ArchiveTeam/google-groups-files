@@ -1,5 +1,15 @@
 #!/bin/sh
 
+checkabort()
+{
+	if test -e STOP;
+	then
+		echo STOP file found
+		rm STOP
+		exit 0
+	fi
+}
+
 getdir()
 {
 	BASE=http://archiveteamorg.appspot.com
@@ -13,6 +23,7 @@ getdir()
 	WGET_OUT=$TMP-wgetout.$$
 	NULL=/dev/null
 	
+	checkabort
 	ret=0
 	
 	wget -t 3 -O $DIRS $BASE/getdir?n=1 2> $WGET_OUT
@@ -113,6 +124,7 @@ getgrp()
 	NULL=/dev/null
 	WGET_OUT=$TMP-wgetout.$$
 
+	checkabort
 	wget -t 3 -O $GRP $BASE/getgrp
 	if test $? -ne 0;
 	then
@@ -139,23 +151,34 @@ getgrp()
 		
 		echo Downloading $grp
 		
-		doneg=0
-		wget -t 3 -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages 2> $WGET_OUT
+		doneg=1
+		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages 2> $WGET_OUT
 		wgetrc=$?
 		cat $WGET_OUT
 		if test $wgetrc -ne 0;
 		then
+			doneg=0
 			echo Error downloading $grp-pages.zip
 			grep -q "500 Internal Server Error" $WGET_OUT
 			if test $? -eq 0;
 			then
 				wget -t 3 -O $NULL $BASE/errorgrp?g=$grp
 			fi
-		else
-			doneg=1
+			
+			grep -q "403 Forbidden" $WGET_OUT
+			if test $? -eq 0;
+			then
+				wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+			fi
+				
+			grep -q "sorry.google.com" $WGET_OUT
+			if test $? -eq 0;
+			then
+				return 2
+			fi
 		fi				
 			
-		wget -t 3 -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
+		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
 		if test $? -ne 0;
 		then
 			doneg=0
@@ -172,9 +195,9 @@ getgrp()
 	return $ret
 }
 
+stime=2
 while true;
 do
-	stime=2
 	donef=0
 	while true;
 	do
@@ -203,6 +226,7 @@ do
 			then
 				echo Done, waiting 30 minutes...
 				sleep 1800
+				stime=2
 			fi
 			break
 		fi
@@ -210,13 +234,13 @@ do
 		then
 			echo Error, waiting $stime seconds...
 			sleep $stime
-			if $stime -le 856;
+			if test $stime -le 856;
 			then
-				if $time -ge 256;
+				if test $stime -ge 256;
 				then
 					stime=$(($stime+300))
 				else
-					stime=$(($stime**2))
+					stime=$(($stime*$stime))
 				fi
 			fi
 		fi
@@ -224,5 +248,6 @@ do
 		then
 			stime=2
 		fi	
+		echo New sleep: $stime
 	done
 done
