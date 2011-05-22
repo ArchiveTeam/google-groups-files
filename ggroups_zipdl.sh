@@ -196,6 +196,7 @@ getgrp()
 			grep -q "sorry.google.com" $WGET_OUT
 			if test $? -eq 0;
 			then
+				rm $sub/$grp-pages.zip
 				return 2
 			fi
 		fi
