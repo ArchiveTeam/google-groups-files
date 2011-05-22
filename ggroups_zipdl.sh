@@ -2,10 +2,10 @@
 
 checkabort()
 {
-	if test -e STOP;
+	if test -e /tmp/ggroups-STOP;
 	then
 		echo STOP file found
-		rm STOP
+		rm /tmp/ggroups-STOP
 		exit 0
 	fi
 }
@@ -44,6 +44,7 @@ getdir()
 		then
 			continue
 		fi
+		checkabort
 	
 		URL=http://groups.google.com/groups/dir?$gdir
 		wget -t 3 -O $DIR $URL
@@ -61,6 +62,7 @@ getdir()
 			then
 				continue
 			fi
+			checkabort
 		
 			wget -t 3 -O $NULL $BASE/adddir?$sdir
 			if test $? -ne 0;
@@ -141,7 +143,8 @@ getgrp()
 		then
 			continue;
 		fi
-	
+		checkabort
+
 		h=$(echo $grp | md5sum)
 		c1=$(echo $h | cut -c 1)
 		c2=$(echo $h | cut -c 2)
