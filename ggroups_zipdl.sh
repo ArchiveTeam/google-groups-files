@@ -74,22 +74,18 @@ getdir()
 		
 		grep "<a href=\"/groups/dir?" $DIR | sed "s/.*<a href=\"\/groups\/dir?//g;s/\">.*//g" | sort -u > $DIRS
 		echo Found $(wc --lines $DIRS) subdirectories
-		while read sdir
-		do
-			if test -z $sdir;
-			then
-				continue
-			fi
-			checkabort
-		
-			wget -t 3 -O $NULL $BASE/adddir?$sdir
-			if test $? -ne 0;
-			then
-				echo Error sending directory to the server
-				return 2
-			fi
-			ret=1
-		done < $DIRS
+
+		curl -w 'Uploaded %{size_upload} bytes\n' -T $DIRS $BASE/adddir
+		cret=$?
+		cat $DIRS | xargs echo dirs:
+		if test $cret -ne 0;
+		then
+			echo Error sending directory $DIRS to the server: $cret
+			return 2
+		fi
+		ret=1
+
+		checkabort
 		
 		grep -m 1 "<a href=\"/group/" $DIR > /dev/null
 		if test $? -eq 1;
@@ -109,15 +105,15 @@ getdir()
 				else
 					echo Contd. dir: $strt, gdir: $gdir
 				fi
-				while read gname
-				do
-					wget -t 3 -O $NULL $BASE/addgrp?g=$gname
-					if test $? -ne 0;
-					then
-						echo Error sending group name to the server
-						return 1
-					fi				
-				done < $GRPS
+				
+				curl -w 'Uploaded %{size_upload} bytes\n' -T $GRPS $BASE/addgrp
+				cret=$?
+				cat $GRPS | xargs echo groups:
+				if test $cret -ne 0;
+				then
+					echo Error sending group name to the server
+					return 1
+				fi
 				
 				mv $GRPS $LAST_GRPS
 				strt=$(($strt + 15))
@@ -128,6 +124,8 @@ getdir()
 				
 				ret=1
 			done
+		else
+			echo No groups
 		fi
 		
 		wget -t 3 -O $NULL $BASE/donedir?$gdir
