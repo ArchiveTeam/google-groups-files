@@ -1,12 +1,17 @@
 #!/bin/sh
 
 lastop=0
+seed=$(date +%s)
 delay()
 {
 	thisop=$(date +%s)
-	if test $(($thisop - $lastop)) -lt 1;
+	thiswait=$(($seed % 4 + 1))
+	seed=$((\($seed * 9301 + 4929\) % 233280))
+	thisdelay=$(($thisop - $lastop))
+	if test $thisdelay -lt $thiswait;
 	then
-		sleep 1
+		echo "Delaying for $thiswait seconds"
+		sleep $thiswait
 	fi
 	lastop=$(date +%s)
 }
@@ -310,6 +315,5 @@ do
 		then
 			stime=2
 		fi	
-		echo New sleep: $stime
 	done
 done
