@@ -8,6 +8,7 @@ delay()
 	then
 		sleep 1
 	fi
+	lastop=$(date +%s)
 }
 
 checkabort()
@@ -58,6 +59,7 @@ getdir()
 	
 		URL=http://groups.google.com/groups/dir?$gdir
 		delay
+		
 		wget -t 3 -O $DIR $URL
 		if test $? -ne 0;
 		then
