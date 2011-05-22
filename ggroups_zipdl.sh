@@ -193,32 +193,48 @@ getgrp()
 			then
 				return 2
 			fi
-		fi				
+		fi
+		
+		adult=0
 		if test -s $sub/$grp-pages.zip;
 		then
-			echo $grp downloaded
+			grep -s adult_confirm $sub/$grp-pages.zip
+			if test $? -eq 0;
+			then
+				echo $grp is an adult group
+				wget -t 3 -O $NULL $BASE/adultgrp?g=$grp
+				rm $sub/$grp-pages.zip
+				adult=1
+				doneg=0
+			else
+				echo $grp downloaded
+			fi
 		else
 			echo remove $sub/$grp-pages.zip
 			rm $sub/$grp-pages.zip
 		fi
 		
-		delay
-		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
-		if test $? -ne 0;
-		then
-			doneg=0
-		fi
 		
-		if test $doneg -eq 1;
+		if test $adult -eq 0;
 		then
-			wget -t 3 -O $NULL $BASE/donegrp?g=$grp
-		fi
+			delay
+			wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
+			if test $? -ne 0;
+			then
+				doneg=0
+			fi
+			
+			if test $doneg -eq 1;
+			then
+				wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+			fi
 
-		if test -s $sub/$grp-files.zip;
-		then
-			echo $grp downloaded
-		else
-			rm $sub/$grp-files.zip
+			if test -s $sub/$grp-files.zip;
+			then
+				echo $grp downloaded
+			else
+				rm $sub/$grp-files.zip
+			fi
 		fi
 		
 		ret=1
