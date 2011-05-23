@@ -261,6 +261,13 @@ then
 fi
 rm -rf tdir$$
 
+which curl > /dev/null
+if test $? -ne 0;
+then
+	echo Error: cannot find curl
+	exit 1
+fi
+
 stime=2
 while true;
 do
