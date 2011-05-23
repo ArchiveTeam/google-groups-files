@@ -1,12 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 lastop=0
-seed=$(date +%s)
 delay()
 {
 	thisop=$(date +%s)
-	thiswait=$(($seed % 10 + 1))
-	seed=$((\($seed * 9301 + 4929\) % 233280))
+	thiswait=$(($RANDOM % 10 + 1))
 	thisdelay=$(($thisop - $lastop))
 	if test $thisdelay -lt $thiswait;
 	then
