@@ -5,7 +5,7 @@ seed=$(date +%s)
 delay()
 {
 	thisop=$(date +%s)
-	thiswait=$(($seed % 4 + 1))
+	thiswait=$(($seed % 10 + 1))
 	seed=$((\($seed * 9301 + 4929\) % 233280))
 	thisdelay=$(($thisop - $lastop))
 	if test $thisdelay -lt $thiswait;
@@ -297,7 +297,22 @@ do
 			then
 				donef=1
 			else
-				break
+				if test $do_download -eq 1;
+				then
+					break
+				else
+					echo Error, waiting $stime seconds...
+					sleep $stime
+					if test $stime -le 856;
+					then
+						if test $stime -ge 256;
+						then
+							stime=$(($stime+300))
+						else
+							stime=$(($stime*$stime))
+						fi
+					fi					
+				fi
 			fi
 		fi	
 	done
