@@ -4,7 +4,7 @@ lastop=0
 delay()
 {
 	thisop=$(date +%s)
-	thiswait=$(($RANDOM % 10 + 1))
+	thiswait=$(($RANDOM % 4 + 1))
 	thisdelay=$(($thisop - $lastop))
 	if test $thisdelay -lt $thiswait;
 	then
@@ -116,6 +116,7 @@ getdir()
 				mv $GRPS $LAST_GRPS
 				strt=$(($strt + 15))
 				
+				delay
 				wget -t 3 -O $GRPC $URL\&start=$strt
 				grep "<a class=\"on\" href=\"/group/" $GRPC | sed "s/[ ]*<a class=\"on\" href=\"\/group\///g;s/?lnk=\">.*//g" > $GRPS
 				echo Downloaded $(wc --lines $GRPS) more groups
