@@ -268,11 +268,24 @@ then
 	exit 1
 fi
 
+do_discover=0
+do_download=0
+if test x$1 = xdiscover;
+then
+	do_discover=1
+elif test x$1 = xdownload;
+then
+	do_download=1
+else
+	do_discover=1
+	do_download=1
+fi
+
 stime=2
 while true;
 do
 	donef=0
-	while true;
+	while test $do_discover -eq 1;
 	do
 		getdir
 		ret=$?
@@ -289,7 +302,7 @@ do
 		fi	
 	done
 
-	while true;
+	while test $do_download -eq 1;
 	do
 		getgrp
 		ret=$?
