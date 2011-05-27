@@ -131,6 +131,7 @@ getdir()
 		fi
 		
 		wget -t 3 -O $NULL $BASE/donedir?$gdir
+		wget -t 3 -O $NULL $BASE/donedir2?$gdir
 	done < $DIRS
 	
 	return $ret
