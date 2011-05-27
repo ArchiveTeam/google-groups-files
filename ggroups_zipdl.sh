@@ -4,7 +4,7 @@ lastop=0
 delay()
 {
 	thisop=$(date +%s)
-	thiswait=$(($RANDOM % 4 + 1))
+	thiswait=$(($RANDOM % 20 + 1))
 	thisdelay=$(($thisop - $lastop))
 	if test $thisdelay -lt $thiswait;
 	then
