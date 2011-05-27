@@ -175,7 +175,8 @@ getgrp()
 		
 		doneg=1
 		delay
-		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-pages.zip http://groups.google.com/group/$grp/download?s=pages 2> $WGET_OUT
+		echo Downloading pages...
+		wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-pages.zip --post-data="WebToken=&_done=http%3A%2F%2Fgroups.google.com%2Fgroup%2F$grp%2Fdownload%3Fs%3Dpages&Action.AdultConfirm=x" http://groups.google.com/groups/adult_confirm 2> $WGET_OUT
 		wgetrc=$?
 		cat $WGET_OUT
 		if test $wgetrc -ne 0;
@@ -214,7 +215,7 @@ getgrp()
 				adult=1
 				doneg=0
 			else
-				echo $grp downloaded
+				echo $grp pages downloaded
 			fi
 		else
 			echo remove $sub/$grp-pages.zip
@@ -225,7 +226,8 @@ getgrp()
 		if test $adult -eq 0;
 		then
 			delay
-			wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip http://groups.google.com/group/$grp/download?s=files
+			echo Downloading files...
+			wget -t 3 --referer=http://groups.google.com/group/$grp -O $sub/$grp-files.zip --post-data="WebToken=&_done=http%3A%2F%2Fgroups.google.com%2Fgroup%2F$grp%2Fdownload%3Fs%3Dfiles&Action.AdultConfirm=x" http://groups.google.com/groups/adult_confirm
 			if test $? -ne 0;
 			then
 				doneg=0
@@ -238,7 +240,7 @@ getgrp()
 
 			if test -s "$sub/$grp-files.zip";
 			then
-				echo $grp downloaded
+				echo $grp files downloaded
 			else
 				rm $sub/$grp-files.zip
 			fi
