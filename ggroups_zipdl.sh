@@ -33,7 +33,7 @@ getdir()
 	GRPS=$TMP-grps.$$
 	GRPC=$TMP-grpc.$$
 	LAST_GRPS=$TMP-lgrps.$$
-	DIRS=$TMP-dirs.$$
+	SDIRS=$TMP-sdirs.$$
 	WGET_OUT=$TMP-wgetout.$$
 	NULL=/dev/null
 	
@@ -70,16 +70,19 @@ getdir()
 			return 2
 		fi
 		
-		grep "<a href=\"/groups/dir?" $DIR | sed "s/.*<a href=\"\/groups\/dir?//g;s/\">.*//g" | sort -u > $DIRS
-		echo Found $(wc --lines $DIRS) subdirectories
+		grep "<a href=\"/groups/dir?" $DIR | sed "s/.*<a href=\"\/groups\/dir?//g;s/\">.*//g" | sort -u > $SDIRS
+		echo Found $(wc --lines $SDIRS) subdirectories
 
-		curl -w 'Uploaded %{size_upload} bytes\n' -T $DIRS $BASE/adddir
-		cret=$?
-		cat $DIRS | xargs echo dirs:
-		if test $cret -ne 0;
+		if test -s "$SDIRS";
 		then
-			echo Error sending directory $DIRS to the server: $cret
-			return 2
+			curl -w 'Uploaded %{size_upload} bytes\n' -T $SDIRS $BASE/adddir
+			cret=$?
+			cat $SDIRS | xargs echo dirs:
+			if test $cret -ne 0;
+			then
+				echo Error sending directory $SDIRS to the server: $cret
+				return 2
+			fi
 		fi
 		ret=1
 
@@ -199,7 +202,7 @@ getgrp()
 		fi
 		
 		adult=0
-		if test -s $sub/$grp-pages.zip;
+		if test -s "$sub/$grp-pages.zip";
 		then
 			grep -s adult_confirm $sub/$grp-pages.zip
 			if test $? -eq 0;
@@ -232,7 +235,7 @@ getgrp()
 				wget -t 3 -O $NULL $BASE/donegrp?g=$grp
 			fi
 
-			if test -s $sub/$grp-files.zip;
+			if test -s "$sub/$grp-files.zip";
 			then
 				echo $grp downloaded
 			else
