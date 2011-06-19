@@ -201,7 +201,7 @@ getgrp()
 			grep -q "403 Forbidden" $WGET_OUT
 			if test $? -eq 0;
 			then
-				echo $grp > $GRPD
+				echo $grp >> $GRPD
 			fi
 				
 			grep -q "sorry.google.com" $WGET_OUT
@@ -231,7 +231,7 @@ getgrp()
 			rm $sub/$grp-pages.zip
 			# wrong, but...
 			adult=1
-			echo $grp > $GRPD
+			echo $grp >> $GRPD
 		fi
 		
 		
@@ -247,7 +247,7 @@ getgrp()
 			
 			if test $doneg -eq 1;
 			then
-				echo $grp > $GRPD
+				echo $grp >> $GRPD
 			fi
 
 			if test -s "$sub/$grp-files.zip";
