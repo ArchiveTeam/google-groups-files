@@ -19,6 +19,13 @@ checkabort()
 	if test -e /tmp/ggroups-STOP;
 	then
 		echo STOP file found
+		
+		if test -e /tmp/ggroups-grpdone.$$;
+		then
+			cat /tmp/ggroups-grpdone.$$
+			curl -w 'Marked as DONE\n' -T /tmp/ggroups-grpdone.$$ http://archiveteamorg.appspot.com/donegrp
+		fi
+		
 		rm /tmp/ggroups-STOP
 		exit 0
 	fi
@@ -144,7 +151,8 @@ getgrp()
 	GRP=$TMP-grpname.$$
 	NULL=/dev/null
 	WGET_OUT=$TMP-wgetout.$$
-
+	GRPD=$TMP-grpdone.$$
+	
 	checkabort
 	wget -t 3 -O $GRP $BASE/getgrp
 	if test $? -ne 0;
@@ -156,6 +164,7 @@ getgrp()
 	
 	ret=0
 	
+	rm $GRPD 2> $NULL > $NULL
 	while read grp
 	do
 		if test -z $grp;
@@ -192,7 +201,7 @@ getgrp()
 			grep -q "403 Forbidden" $WGET_OUT
 			if test $? -eq 0;
 			then
-				wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+				echo $grp > $GRPD
 			fi
 				
 			grep -q "sorry.google.com" $WGET_OUT
@@ -220,6 +229,9 @@ getgrp()
 		else
 			echo remove $sub/$grp-pages.zip
 			rm $sub/$grp-pages.zip
+			# wrong, but...
+			adult=1
+			echo $grp > $GRPD
 		fi
 		
 		
@@ -235,7 +247,7 @@ getgrp()
 			
 			if test $doneg -eq 1;
 			then
-				wget -t 3 -O $NULL $BASE/donegrp?g=$grp
+				echo $grp > $GRPD
 			fi
 
 			if test -s "$sub/$grp-files.zip";
@@ -248,6 +260,9 @@ getgrp()
 		
 		ret=1
 	done < $GRP
+	
+	cat $GRPD
+	curl -w 'Marked as DONE\n' -T $GRPD $BASE/donegrp
 	
 	return $ret
 }
